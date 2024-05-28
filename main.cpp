@@ -11,9 +11,9 @@ int main() {
         std::unordered_map<std::string, int> wordCount;
         std::map<std::string, std::vector<int>> wordLines;
         std::vector<std::string> urls;
-
         std::string line;
         int lineNumber = 0;
+        
         while (std::getline(inputFile, line)) {
             lineNumber++;
             processLine(line, lineNumber, wordCount, wordLines, urls);

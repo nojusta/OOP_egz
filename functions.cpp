@@ -64,15 +64,18 @@ void writeOutput(const std::unordered_map<std::string, int>& wordCount, const st
         std::ofstream outputFile("output.txt");
         if (outputFile) {
             if (!wordLines.empty()) {
-                outputFile << std::left << std::setw(30) << "Žodis" << std::setw(10) << " Kiekis" << " Eilučių Nr.\n";
-                outputFile << std::string(50, '-') << "\n";
+                int wordColumnWidth = 30;
+                int countColumnWidth = 10;
+                outputFile << std::left << std::setw(wordColumnWidth) << "Žodis" << std::setw(countColumnWidth) << " Kiekis" << "  Eilučių Nr.\n";
+                outputFile << std::string(wordColumnWidth + countColumnWidth + 12, '-') << "\n";
                 for (const auto& entry : wordLines) {
                     if (entry.second.size() > 1){
                         auto countIt = wordCount.find(entry.first);
                         if (countIt != wordCount.end()) {
-                            outputFile << std::left << std::setw(30) << entry.first << std::setw(10) << countIt->second;
+                            int padding = wordColumnWidth - entry.first.size() + (entry.first.size() - visual_width(entry.first));
+                            outputFile << std::left << entry.first << std::string(padding, ' ') << std::setw(countColumnWidth) << countIt->second;
                             for (int line : entry.second) {
-                                outputFile << std::setw(4) << line;
+                                outputFile << " " << line;
                             }
                             outputFile << "\n";
                         }
@@ -91,4 +94,13 @@ void writeOutput(const std::unordered_map<std::string, int>& wordCount, const st
     } catch (...) {
         std::cerr << "Nenumatyta klaida rašant į failą." << std::endl;
     }
+}
+
+int visual_width(const std::string& s) {
+    std::regex lithuanian_chars("\xc4\x85|\xc4\x8d|\xc4\x99|\xc4\x97|\xc5\xa1|\xc5\xb3|\xc5\xab|\xc5\xbe|\xc4\xaf|\xc4\x84|\xc4\x8c|\xc4\x98|\xc4\x96|\xc5\xa0|\xc5\xb2|\xc5\xaa|\xc5\xbd|\xc4\xae");
+    std::ptrdiff_t num_lithuanian_chars = std::distance(
+        std::sregex_iterator(s.begin(), s.end(), lithuanian_chars),
+        std::sregex_iterator()
+    );
+    return s.size() - num_lithuanian_chars;
 }

@@ -2,32 +2,25 @@
 
 void Read_File(std::ifstream& in, std::map<std::string, std::vector<int>>& zodziai)
 {
-    std::string zodis;
     std::string line;
     int line_number = 1;
+    std::regex word_regex(R"((\b[-ąčęėįšųūžĄČĘĖĮŠŲŪŽa-zA-Z]+\b))");
 
     while (std::getline(in, line)) {
-        size_t pos = 0;
-        while ((pos = line.find_first_of("- – ")) != std::string::npos) {
-            std::string zodis = line.substr(0, pos);
-            zodis.erase(std::remove_if(zodis.begin(), zodis.end(), [](char c) { return std::ispunct(c) || std::isdigit(c); }), zodis.end());
-            if (!zodis.empty()) {
-                zodziai[zodis].push_back(line_number);
-            }
-            line = line.substr(pos + 1);
-        }
-        if (!line.empty()) {
-            line.erase(std::remove_if(line.begin(), line.end(), [](char c) { return std::ispunct(c) || std::isdigit(c); }), line.end());
-            zodziai[line].push_back(line_number);
+        std::sregex_iterator words_begin = std::sregex_iterator(line.begin(), line.end(), word_regex);
+        std::sregex_iterator words_end = std::sregex_iterator();
+        for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+            std::string word = (*i).str();
+            std::transform(word.begin(), word.end(), word.begin(), ::tolower); // Convert to lowercase
+            zodziai[word].push_back(line_number);
         }
         line_number++;
     }
 }
 
-
-void Counter(std::map<std::string, std::vector<int>>& zodziai)
+void Counter(const std::map<std::string, std::vector<int>>& zodziai)
 {
-    std::ofstream out ("counter.txt");
+    std::ofstream out("counter.txt");
     for (const auto& pair : zodziai) {
         out << pair.first << ": " << pair.second.size() << "\n";
     }
@@ -39,7 +32,8 @@ void WriteCrossReference(const std::map<std::string, std::vector<int>>& zodziai)
     for (const auto& pair : zodziai) {
         if (pair.second.size() > 1) {
             out << pair.first << ": ";
-            for (int line : pair.second) {
+            std::set<int> unique_lines(pair.second.begin(), pair.second.end());
+            for (int line : unique_lines) {
                 out << line << " ";
             }
             out << "\n";

@@ -13,6 +13,8 @@ int main()
 
     Read_File(in, zodziai);
     Counter(zodziai);
+
+    // Reset file stream for URL processing
     in.clear();
     in.seekg(0);
 

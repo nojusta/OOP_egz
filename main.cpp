@@ -8,18 +8,19 @@ int main()
         return 1;
     }
 
-    std::set<std::string> urls;
     std::map<std::string, std::vector<int>> zodziai;
+    std::unordered_map<std::string, int> wordCount;
+    std::vector<std::string> urls;
 
     Read_File(in, zodziai);
-    Counter(zodziai);
+    Counter(zodziai, wordCount);
 
-    // Reset file stream for URL processing
     in.clear();
     in.seekg(0);
 
-    WriteCrossReference(zodziai);
     FindURLs(in, urls);
+
+    writeOutput(wordCount, zodziai, urls);
 
     return 0;
 }

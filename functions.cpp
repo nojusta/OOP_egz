@@ -57,7 +57,7 @@ void FindURLs(std::ifstream& in, std::vector<std::string>& urls, const std::unor
             std::string potential_url = (*i).str();
             std::transform(potential_url.begin(), potential_url.end(), potential_url.begin(), ::tolower); // konvertuoja i mazasias raides
 
-            // Extract the domain part to validate against TLDs
+            // Jei URL turi http(s):// arba www. pradzia
             std::regex domain_regex(R"(([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,}))");
             std::smatch domain_match;
             if (std::regex_search(potential_url, domain_match, domain_regex)) {

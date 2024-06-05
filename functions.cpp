@@ -1,8 +1,26 @@
 #include "functions.h"
 
+// Funkcija, kuri nuskaito TLD faila
+std::unordered_set<std::string> LoadTLDs(const std::string& filename) {
+    std::unordered_set<std::string> tlds;
+    std::ifstream tldFile(filename);
+    if (!tldFile.is_open()) {
+        std::cerr << "Error: Could not open TLD file." << std::endl;
+        return tlds;
+    }
+
+    std::string tld;
+    while (std::getline(tldFile, tld)) {
+        if (!tld.empty()) {
+            tlds.insert("." + tld);  // prideda taska prie TLD
+        }
+    }
+
+    return tlds;
+}
+
 // Skaito faila ir sudeda zodzius i map
-void Read_File(std::ifstream& in, std::map<std::string, std::vector<int>>& zodziai)
-{
+void Read_File(std::ifstream& in, std::map<std::string, std::vector<int>>& zodziai) {
     std::string line;
     int line_number = 1;
     std::regex word_regex(R"((\b[-ąčęėįšųūžĄČĘĖĮŠŲŪŽa-zA-Z]+\b))");
@@ -20,27 +38,38 @@ void Read_File(std::ifstream& in, std::map<std::string, std::vector<int>>& zodzi
 }
 
 // Suskaiciuoja kiek kartu pasikartoja kiekvienas zodis
-void Counter(const std::map<std::string, std::vector<int>>& zodziai, std::unordered_map<std::string, int>& wordCount)
-{
+void Counter(const std::map<std::string, std::vector<int>>& zodziai, std::unordered_map<std::string, int>& wordCount) {
     for (const auto& pair : zodziai) {
         wordCount[pair.first] = pair.second.size();
     }
 }
 
 // Suranda URL adresus tekste
-void FindURLs(std::ifstream& in, std::vector<std::string>& urls)
-{
-    std::string word;
+void FindURLs(std::ifstream& in, std::vector<std::string>& urls, const std::unordered_set<std::string>& tlds) {
     std::string line;
-    std::vector<std::string> domains = {".com", ".net", ".org", ".lt", ".edu", ".gov"};
+    std::regex url_regex(R"((https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))");
 
     while (std::getline(in, line)) {
-        std::istringstream iss(line);
-        while (iss >> word) {
-            for (const std::string& tld : domains) {
-                if (word.find(tld) != std::string::npos) {
-                    urls.push_back(word);
-                    break;
+        std::sregex_iterator urls_begin = std::sregex_iterator(line.begin(), line.end(), url_regex);
+        std::sregex_iterator urls_end = std::sregex_iterator();
+
+        for (std::sregex_iterator i = urls_begin; i != urls_end; ++i) {
+            std::string potential_url = (*i).str();
+            std::transform(potential_url.begin(), potential_url.end(), potential_url.begin(), ::tolower); // konvertuoja i mazasias raides
+
+            // Extract the domain part to validate against TLDs
+            std::regex domain_regex(R"(([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,}))");
+            std::smatch domain_match;
+            if (std::regex_search(potential_url, domain_match, domain_regex)) {
+                std::string domain = domain_match.str(0);
+                size_t pos = domain.find_last_of('.');
+                while (pos != std::string::npos) {
+                    std::string tld = domain.substr(pos);
+                    if (tlds.find(tld) != tlds.end()) {
+                        urls.push_back(potential_url);
+                        break;
+                    }
+                    pos = domain.find_last_of('.', pos - 1);
                 }
             }
         }
@@ -48,19 +77,7 @@ void FindURLs(std::ifstream& in, std::vector<std::string>& urls)
 }
 
 int visual_width(const std::string& str) {
-    int width = 0;
-    for (char ch : str) {
-        if (static_cast<unsigned char>(ch) >= 128) {
-            if (ch >= -60 && ch <= -9) {
-                width += 1;
-            } else {
-                width += 2; 
-            }
-        } else {
-            width += 1;
-        }
-    }
-    return width;
+    return str.size();
 }
 
 // Iraso rezultatus i failus
@@ -114,3 +131,4 @@ void writeOutput(const std::unordered_map<std::string, int>& wordCount,
         std::cerr << "Nenumatyta klaida rašant į failą." << std::endl;
     }
 }
+

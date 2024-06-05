@@ -28,6 +28,8 @@ int main() {
 
     FindURLs(in, urls, tlds);
 
+    ExtractWordsWithBus(zodziai);
+
     writeOutput(wordCount, zodziai, urls);
 
     return 0;

@@ -5,7 +5,7 @@ std::unordered_set<std::string> LoadTLDs(const std::string& filename) {
     std::unordered_set<std::string> tlds;
     std::ifstream tldFile(filename);
     if (!tldFile.is_open()) {
-        std::cerr << "Error: Could not open TLD file." << std::endl;
+        std::cerr << "Error: Nepavyko nuskaityti failo." << std::endl;
         return tlds;
     }
 
@@ -132,3 +132,24 @@ void writeOutput(const std::unordered_map<std::string, int>& wordCount,
     }
 }
 
+// Funckija, kuri istraukia zodzius, kuriuose yra zodziu junginys 'bus'
+void ExtractWordsWithBus(const std::map<std::string, std::vector<int>>& zodziai) {
+    std::ofstream busFile("bus.txt");
+    if (!busFile) {
+        std::cerr << "Nepavyko sukurti failo bus.txt" << std::endl;
+        return;
+    }
+
+    int totalCount = 0;
+
+    for (const auto& pair : zodziai) {
+        if (pair.first.find("bus") != std::string::npos) {
+            busFile << pair.first << " " << pair.second.size() << "\n";
+            totalCount += pair.second.size();
+        }
+    }
+    
+    busFile << "\nIš viso: " << totalCount << "\n";
+
+    busFile.close();
+}

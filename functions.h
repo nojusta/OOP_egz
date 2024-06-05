@@ -22,5 +22,6 @@ void writeOutput(const std::unordered_map<std::string, int>& wordCount,
                  const std::map<std::string, std::vector<int>>& wordLines, 
                  const std::vector<std::string>& urls);
 std::unordered_set<std::string> LoadTLDs(const std::string& filename);
+void ExtractWordsWithBus(const std::map<std::string, std::vector<int>>& zodziai);
 
 #endif
